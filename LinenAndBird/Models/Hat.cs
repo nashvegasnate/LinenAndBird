@@ -7,6 +7,7 @@ namespace LinenAndBird.Models
 {
     public class Hat
     {
+        public Guid Id { get; set; }
         public string Designer { get; set; }
         public string Color { get; set; }
         
@@ -16,8 +17,8 @@ namespace LinenAndBird.Models
 
     public enum HatStyle
     {
-        OpenBack,
         Normal,
+        OpenBack,
         WideBrim
     }
 }
