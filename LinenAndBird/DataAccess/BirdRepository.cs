@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 namespace LinenAndBird.DataAccess
 {
@@ -23,7 +24,39 @@ namespace LinenAndBird.DataAccess
 
         internal IEnumerable<Bird> GetAll()
         {
-            return _birds;
+            //connections are like the tunnel between our app and the database
+            using var connection = new SqlConnection("Server=localhost;Database=LinenAndBird;Trusted_Connection=True;");
+            //connections aren't open by default; we have to do that ourselves
+            connection.Open();
+
+            //this is what tells sql what we want to do
+            var command = connection.CreateCommand();
+            command.CommandText = @"SELECT * 
+                                    FROM Birds";
+            
+            //executeReader is for when we care about getting all the results of our query
+            var reader = command.ExecuteReader();
+
+            var birds = new List<Bird>();      
+
+            //data readers are weird; only get one row from the results at a time
+            while(reader.Read())
+            {
+                //Mapping data from the relational model to the object model
+                var bird = new Bird();
+                bird.Id = reader.GetGuid(0);
+                bird.Size = reader["Size"].ToString();
+                bird.Type = (BirdType)reader["Type"];
+                bird.Color = reader["Color"].ToString();
+                bird.Name = reader["Name"].ToString();
+
+                //each bird goes in the list to return later
+                birds.Add(bird);
+            }
+
+
+            return birds;
+
         }
 
         internal void Add(Bird newBird)
@@ -34,7 +67,39 @@ namespace LinenAndBird.DataAccess
 
         internal Bird GetById(Guid birdId)
         {
-            return _birds.FirstOrDefault(bird => bird.Id == birdId);
+          //connections are like the tunnel between our app and the database
+          using var connection = new SqlConnection("Server=localhost;Database=LinenAndBird;Trusted_Connection=True;");
+          //connections aren't open by default; we have to do that ourselves
+          connection.Open();
+
+
+          var command = connection.CreateCommand();
+          command.CommandText = @"SELECT * 
+                              FROM Birds
+                              WHERE id = @id";
+
+          //IMPORTANT: parameterization prevents sql injection
+          command.Parameters.AddWithValue("id", birdId);
+
+          //executeReader is for when we care about getting all the results of our query
+          var reader = command.ExecuteReader();
+
+          if (reader.Read())
+          {
+            var bird = new Bird();
+            bird.Id = reader.GetGuid(0);
+            bird.Size = reader["Size"].ToString();
+            bird.Type = (BirdType)reader["Type"];
+            bird.Color = reader["Color"].ToString();
+            bird.Name = reader["Name"].ToString();
+
+            return bird;
+          }
+
+          return null;
+
         }
+              //return _birds.FirstOrDefault(bird => bird.Id == birdId);
     }
+    
 }
