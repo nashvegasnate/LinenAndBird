@@ -5,21 +5,29 @@ using System.Threading.Tasks;
 
 namespace LinenAndBird.Models
 {
-    public class Bird
-    {
-        //GUID - long string of characters/numbers used for generating unique ID
-        public Guid Id { get; set; }
-        public BirdType Type { get; set; }
-        public string Color { get; set; }
-        public string Size { get; set; }
-        public string Name { get; set; }
-        public List<string> Accessories { get; set; }
+  public class Bird
+  {
+    //GUID - long string of characters/numbers used for generating unique ID
+    public Guid Id { get; set; }
+    public BirdType Type { get; set; }
+    public string Color { get; set; }
+    public string Size { get; set; }
+    public string Name { get; set; }
 
-    }
+    public IEnumerable<BirdAccessory> Accessories { get; set; }
 
-    public enum BirdType
-    {
-        Dead,
-        Linen
-    }
+  }
+
+  public class BirdAccessory
+  {
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public Guid BirdId { get; set; }
+  }
+
+  public enum BirdType
+  {
+    Dead,
+    Linen
+  }
 }

@@ -1,24 +1,49 @@
 ﻿using LinenAndBird.DataAccess;
 using LinenAndBird.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LinenAndBird.Controllers
 {
-    [Route("api/orders")]
-    [ApiController]
-    public class OrdersController : ControllerBase
+  [Route("api/orders")]
+  [ApiController]
+  public class OrdersController : ControllerBase
+  {
+    BirdRepository _birdRepository;
+    HatRepository _hatRepository;
+    OrdersRepository _orderRepository;
+
+    public OrdersController(BirdRepository birdRepo, HatRepository hatRepo, OrdersRepository ordersRepo)
     {
-        BirdRepository _birdRepository;
-        HatRepository _hatRepository;
-        OrdersRepository _orderRepository;
+      _birdRepository = birdRepo;
+      _hatRepository = hatRepo;
+      _orderRepository = ordersRepo;
 
-        public OrdersController()
-        {
-            _birdRepository = new BirdRepository();
-            _hatRepository = new HatRepository();
-            _orderRepository = new OrdersRepository();
+    }
 
-        }
+    [HttpGet]
+    public IActionResult GetAllOrders()
+    {
+      return Ok(_orderRepository.GetAll());
+    }
+
+    [HttpGet("{id}")]
+    public IActionResult GetOrderById(Guid id)
+    {
+      Order order = _orderRepository.Get(id);
+
+      if (order == null)
+      {
+        return NotFound("No order exists with that id");
+      }
+
+      return Ok(order);
+    }
+
 
         [HttpPost]
         public IActionResult CreateOrder(CreateOrderCommand command)

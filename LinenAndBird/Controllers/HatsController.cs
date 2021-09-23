@@ -2,6 +2,10 @@
 using LinenAndBird.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LinenAndBird.Controllers
 {
@@ -14,9 +18,9 @@ namespace LinenAndBird.Controllers
     {
         HatRepository _repo;
 
-        public HatsController()
+        public HatsController(HatRepository repo)
         {
-            _repo = new HatRepository();
+            _repo = repo;
         }
 
         //Tells api how to expose this function.  
@@ -28,10 +32,10 @@ namespace LinenAndBird.Controllers
 
         //This HttpGet adds below to the original directory of api/hats
         //GET /api/hats/styles/1 -> all open backed hats
-        [HttpGet("styles/{styleOfHat}")]
-        public IEnumerable<Hat> GetHatsByStyle(HatStyle styleOfHat)
+        [HttpGet("styles/{style}")]
+        public IEnumerable<Hat> GetHatsByStyle(HatStyle style)
         {
-            return _repo.GetByStyle(styleOfHat);
+            return _repo.GetByStyle(style);
         }
         
         //Asking for someone to give a parameter of a hat - newHat.

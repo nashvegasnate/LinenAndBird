@@ -1,26 +1,42 @@
 ﻿using LinenAndBird.DataAccess;
 using LinenAndBird.Models;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace LinenAndBird.Controllers
 {
-    [Route("api/birds")]
-    [ApiController]
-    public class BirdController : ControllerBase
+  [Route("api/birds")]
+   [ApiController]
+   public class BirdController : ControllerBase
+   {
+    BirdRepository _repo;
+    
+    //this is asking asp.net for the application configuration
+    //this is known as Dependency Injection
+    public BirdController(BirdRepository repo)
     {
-        BirdRepository _repo;
+      _repo = repo;
+    }
+    
+    [HttpGet]
+    public IActionResult GetAllBirds()
+    {
+     //Returns an "Ok" response
+      return Ok(_repo.GetAll());
+    }
+    
+    [HttpGet("{id}")]
+    public IActionResult GetBirdById(Guid id)
+    {
+      var bird = _repo.GetById(id);
 
-        public BirdController()
-        {
-            _repo = new BirdRepository();
-        }
+      if (bird == null)
+      {
+        return NotFound($"No bird with the id {id} was found.");
+      }
 
-        [HttpGet]
-        public IActionResult GetAllBirds()
-        {
-            //Returns an "Ok" response
-            return Ok(_repo.GetAll());
-        }
+      return Ok(bird);
+    }
 
         [HttpPost]
         //IActionResult method - fancy way to return content & status codes together.
@@ -37,5 +53,30 @@ namespace LinenAndBird.Controllers
 
             return Created("api/birds/1", newBird);
         }
+
+    //api/birds/{id}
+    [HttpDelete("{id}")]
+    public IActionResult DeleteBird(Guid id)
+    {
+      _repo.Remove(id);
+
+      return Ok();
     }
+
+    //api/birds/{id}
+    [HttpPut("{id}")]
+    public IActionResult UpdateBird(Guid id, Bird bird)
+    {
+      var birdToUpdate = _repo.GetById(id);
+
+      if (birdToUpdate == null)
+      {
+        return NotFound($"Could not find bird with the id {id} for updating.");
+      }
+
+      var updatedBird = _repo.Update(id, bird);
+
+      return Ok(updatedBird);
+    }
+   }
 }

@@ -3,13 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using Dapper;
+using Microsoft.Extensions.Configuration;
+
 
 namespace LinenAndBird.DataAccess
 {
-    public class HatRepository
+  public class HatRepository
+  {
+    static List<Hat> _hats = new List<Hat>
+    
     {
-        static List<Hat> _hats = new List<Hat>
-        {
                 new Hat
                 {
                     Id = Guid.NewGuid(),
@@ -31,30 +36,48 @@ namespace LinenAndBird.DataAccess
                     Designer = "Charlie",
                     Style = HatStyle.Normal
                 }
-        };
+    };
 
-        //Internal means that anyone within the project can use
-        internal Hat GetById(Guid hatId)
-        {
-           return _hats.FirstOrDefault(hat => hat.Id == hatId);
-            
-        }
-        internal List<Hat> GetAll()
-        {
-            return _hats;
-        }
+    string _connectionString;
 
-        internal IEnumerable<Hat> GetByStyle(HatStyle styleOfHat)
-        {
-            return _hats.Where(hat => hat.Style == styleOfHat);
-        }
-
-        internal void Add(Hat newHat)
-        {
-            newHat.Id = Guid.NewGuid();
-            _hats.Add(newHat);
-        }
-
-        
+    public HatRepository(IConfiguration config)
+    {
+      _connectionString = config.GetConnectionString("LinenAndBird");
     }
+   
+      //Internal means that anyone within the project can use
+     internal Hat GetById(Guid id)
+     {
+      //create a connection
+      using var db = new SqlConnection(_connectionString);
+
+      var hat = db.QueryFirstOrDefault<Hat>("Select * from Hats where Id = @id", new {id});
+
+      //for parameters this is what dapper is doing internally, basically:
+      //for each property on the parameter object
+      //add a parameter with value to the sql command
+      //end for each
+      //execute the command
+
+      return hat;
+            
+     }
+        
+    internal List<Hat> GetAll()
+    {
+      return _hats;
+    }
+
+    internal IEnumerable<Hat> GetByStyle(HatStyle style)
+    {
+      return _hats.Where(hat => hat.Style == style);
+    }
+
+    internal void Add(Hat newHat)
+    {
+      newHat.Id = Guid.NewGuid();
+
+      _hats.Add(newHat);
+    }      
+  }
 }
